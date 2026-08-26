@@ -74,6 +74,37 @@ class PaymentInitializeView(APIView):
         )
         return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
 
+class PaymentQuoteInitializeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        actor = get_actor(request)
+        PaymentPermissionChecker.check(actor, 'payment.initialize')
+        
+        quote_id = request.data.get('quote_id')
+        payment_plan = request.data.get('payment_plan')
+        callback_url = request.data.get('callback_url')
+        
+        if not quote_id or not payment_plan:
+            return Response({"detail": "quote_id and payment_plan are required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+        from apps.requests.models import Quote
+        quote = get_object_or_404(Quote, pk=quote_id)
+        
+        if actor.role == Role.CUSTOMER and str(quote.request.customer_id) != str(actor.id):
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("Cannot initialize another customer's payment.")
+
+        payment = PaymentService.initialize_quote_payment(
+            actor=actor,
+            correlation_id=str(uuid.uuid4()),
+            quote_id=quote.id,
+            payment_plan=payment_plan,
+            provider_reference=str(uuid.uuid4()),
+            callback_url=callback_url
+        )
+        return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
+
 class PaymentDetailView(APIView):
     permission_classes = [IsAuthenticated]
 

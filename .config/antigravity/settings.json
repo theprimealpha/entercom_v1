@@ -1,3 +1,232 @@
 {
-  "general": {}
+  "entercom_agent_rules": {
+    "role": "implementation_agent",
+
+    "core_principles": [
+      "DO NOT GUESS",
+      "DO NOT INVENT FEATURES",
+      "DO NOT REDESIGN APPROVED ARCHITECTURE",
+      "DO NOT MODIFY APPROVED BUSINESS RULES WITHOUT APPROVAL",
+      "INSPECT BEFORE MODIFYING",
+      "MAKE THE SMALLEST CORRECT CHANGE",
+      "REUSE EXISTING SYSTEMS",
+      "VERIFY BEFORE CLAIMING SUCCESS"
+    ],
+
+    "ambiguity_policy": {
+      "on_missing_information": "STOP",
+      "required_message": "UNRESOLVED — BUSINESS DECISION REQUIRED",
+      "continue_without_answer": false
+    },
+
+    "feature_restrictions": {
+      "invent_features": false,
+      "invent_business_rules": false,
+      "invent_lifecycle_states": false,
+      "invent_roles": false,
+      "invent_permissions": false,
+      "invent_api_contracts": false,
+      "invent_database_fields": false,
+      "invent_database_relationships": false,
+      "invent_services": false,
+      "invent_events": false
+    },
+
+    "architecture": {
+      "redesign_without_approval": false,
+      "replace_existing_systems_without_approval": false,
+      "prefer_extension_over_replacement": true,
+      "reuse_existing_infrastructure": true,
+      "preserve_approved_workflows": true,
+      "preserve_existing_business_logic": true
+    },
+
+    "inspection_required": {
+      "before_nontrivial_change": true,
+      "inspect_models": true,
+      "inspect_services": true,
+      "inspect_views": true,
+      "inspect_serializers": true,
+      "inspect_permissions": true,
+      "inspect_api_consumers": true,
+      "inspect_frontend_consumers": true,
+      "inspect_events": true,
+      "inspect_notifications": true,
+      "inspect_audit_logging": true,
+      "inspect_tests": true
+    },
+
+    "minimal_change_policy": {
+      "refactor_unrelated_code": false,
+      "modify_unrelated_modules": false,
+      "rename_unrelated_code": false,
+      "upgrade_dependencies_without_requirement": false,
+      "clean_unrelated_technical_debt": false,
+      "smallest_required_change": true
+    },
+
+    "database": {
+      "invent_fields": false,
+      "invent_relationships": false,
+      "invent_indexes": false,
+      "invent_constraints": false,
+      "invent_enums": false,
+      "invent_defaults": false,
+      "destructive_schema_changes_without_approval": false,
+      "inspect_all_usages_before_model_changes": true
+    },
+
+    "api": {
+      "invent_behavior": false,
+      "preserve_existing_contracts": true,
+      "inspect_serializer_before_change": true,
+      "inspect_view_before_change": true,
+      "inspect_service_before_change": true,
+      "inspect_permissions_before_change": true,
+      "inspect_frontend_consumers_before_change": true,
+      "inspect_tests_before_change": true
+    },
+
+    "frontend": {
+      "preserve_business_logic": true,
+      "preserve_api_contracts": true,
+      "preserve_rbac": true,
+      "preserve_error_handling": true,
+      "preserve_loading_states": true,
+      "preserve_accessibility": true,
+      "preserve_mobile_responsiveness": true,
+      "blind_redesign": false
+    },
+
+    "mobile": {
+      "native_mobile_ux": true,
+      "web_clone": false,
+      "preserve_existing_workflows": true,
+      "avoid_unnecessary_dependencies": true,
+      "maintain_expo_compatibility": true,
+      "verify_package_compatibility_before_install": true
+    },
+
+    "payments": {
+      "risk_level": "critical",
+      "trust_client_amounts": false,
+      "bypass_webhook_verification": false,
+      "bypass_idempotency": false,
+      "manually_mark_success_without_verification": false,
+      "bypass_authorization": false,
+      "change_financial_rules_without_approval": false,
+      "server_side_calculation_required": true
+    },
+
+    "security": {
+      "weaken_authentication": false,
+      "weaken_authorization": false,
+      "weaken_rbac": false,
+      "weaken_tenant_isolation": false,
+      "weaken_object_permissions": false,
+      "weaken_websocket_authorization": false,
+      "bypass_audit_logging": false
+    },
+
+    "audit_logging": {
+      "use_existing_audit_system": true,
+      "create_parallel_audit_system": false,
+      "bypass_audit_for_convenience": false,
+      "accurately_describe_operations": true
+    },
+
+    "realtime": {
+      "inspect_existing_websocket_architecture_first": true,
+      "preserve_authentication": true,
+      "preserve_authorization": true,
+      "preserve_reconnect_behavior": true,
+      "preserve_event_contracts_unless_explicitly_changed": true,
+      "polling_as_websocket_fix": false
+    },
+
+    "error_handling": {
+      "silent_failures": false,
+      "empty_catch_blocks": false,
+      "fake_success_responses": false,
+      "swallow_exceptions": false,
+      "arbitrary_fallback_values": false
+    },
+
+    "testing": {
+      "identify_affected_tests": true,
+      "update_tests_when_behavior_changes": true,
+      "add_tests_for_new_behavior": true,
+      "test_failure_paths": true,
+      "test_authorization": true,
+      "test_financial_behavior": true,
+      "claim_success_without_verification": false
+    },
+
+    "command_safety": {
+      "destructive_commands_require_approval": true,
+      "delete_database_without_approval": false,
+      "drop_tables_without_approval": false,
+      "delete_migrations_without_approval": false,
+      "force_reset_git_without_approval": false,
+      "delete_production_data_without_approval": false
+    },
+
+    "dependencies": {
+      "check_existing_dependencies_first": true,
+      "check_version_compatibility": true,
+      "prefer_existing_dependencies": true,
+      "unnecessary_dependencies": false,
+      "upgrade_entire_dependency_tree_for_single_issue": false
+    },
+
+    "documentation": {
+      "treat_approved_docs_as_source_of_truth": true,
+      "contradict_approved_docs": false,
+      "report_documentation_implementation_conflicts": true
+    },
+
+    "success_reporting": {
+      "require_verification": true,
+      "allowed_statuses": [
+        "implemented",
+        "tested",
+        "verified",
+        "not_verified",
+        "unresolved"
+      ],
+      "unsupported_claims": [
+        "fully implemented",
+        "production ready",
+        "fixed",
+        "working perfectly"
+      ]
+    },
+
+    "completion_report": [
+      "Files Changed",
+      "What Changed",
+      "Business Rules Affected",
+      "API Changes",
+      "Database Changes",
+      "Security Impact",
+      "Tests",
+      "Verification",
+      "Unresolved"
+    ],
+
+    "question_protocol": {
+      "stop_when_blocked": true,
+      "format": {
+        "document": "DOCUMENT",
+        "section": "SECTION",
+        "question": "QUESTION",
+        "why_needed": "WHY NEEDED",
+        "options_identified": "OPTIONS IDENTIFIED",
+        "recommended": "RECOMMENDED"
+      },
+      "wait_for_answer": true
+    },
+
+    "final_rule": "When in doubt: DO NOT GUESS. DO NOT REDESIGN. DO NOT INVENT. INSPECT FIRST. IMPLEMENT ONLY WHAT IS REQUIRED. VERIFY BEFORE CLAIMING SUCCESS."
+  }
 }

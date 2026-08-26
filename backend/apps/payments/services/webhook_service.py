@@ -132,13 +132,32 @@ class WebhookService:
                 is_system_critical=True,
             ))
             
-            from apps.orders.services.order_service import OrderService
-            OrderService.process_payment_paid_event(
-                actor=actor,
-                correlation_id=correlation_id,
-                order_id=payment.order_id
-            )
-            
+            if payment.order_id:
+                from apps.orders.services.order_service import OrderService
+                OrderService.process_payment_paid_event(
+                    actor=actor,
+                    correlation_id=correlation_id,
+                    order_id=payment.order_id
+                )
+                
+            if payment.quote_id:
+                from apps.requests.models import QuoteStatus
+                quote = payment.quote
+                quote.amount_paid += payment.amount
+                if quote.amount_paid >= quote.amount:
+                    quote.status = QuoteStatus.PAID
+                else:
+                    quote.status = QuoteStatus.PARTIALLY_PAID
+                quote.save()
+                
+                from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+                import logging
+                logger = logging.getLogger(__name__)
+                try:
+                    RequestProcessOrchestrator.sync(quote.request_id)
+                except Exception as exc:
+                    logger.error(f"Orchestrator sync failed after quote payment {quote.id}: {exc}")
+
         elif event_type == 'charge.failed':
             old_payment = Payment.objects.get(pk=payment.pk)
             payment.status = PaymentStatus.FAILED

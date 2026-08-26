@@ -1,2 +1,109 @@
-I am still getting same error with the file uploading
--> let's isolate it just as we did the push notification
+## CORRECTION — PAYMENT MUST BE IMPLEMENTED ON QUOTES, NOT ORDERS
+
+The previous implementation targeted **Order payment**, but that is NOT the requirement.
+
+STOP and audit the implementation before making any further changes.
+
+### Correct Business Requirement
+
+The payment model being implemented is for **Request Quotes**.
+
+When a customer receives an approved quote, they must have two payment options:
+
+1. **Pay 50% deposit**
+
+   * Customer pays 50% of the quote total.
+   * The remaining 50% becomes outstanding.
+   * The request may proceed through the approved post-payment workflow.
+
+2. **Pay 100% upfront**
+
+   * Customer pays the entire quote total.
+   * No remaining quote balance exists.
+
+After the work is completed, if the customer selected the 50% option, the remaining 50% must become payable.
+
+### Critical Scope Rule
+
+The implementation MUST operate on:
+
+**Request → Quote → Quote Payment**
+
+It MUST NOT implement this requirement through:
+
+**Order → Order Payment**
+
+Do not replace, redesign, or modify the existing product-order payment workflow unless the existing architecture explicitly requires a shared payment mechanism.
+
+### Required Audit
+
+Before changing anything:
+
+1. Find the existing Quote model.
+2. Find QuoteService.
+3. Find quote approval flow.
+4. Find existing quote payment logic.
+5. Find the payment model/service currently associated with quotes.
+6. Find the request state transition that occurs after quote payment.
+7. Find the existing Order payment implementation.
+8. Determine exactly which changes from the previous implementation incorrectly belong to Orders.
+
+Report:
+
+* Files incorrectly modified for Order payment.
+* Files that should actually be modified for Quote payment.
+* Existing quote-payment functionality that can be reused.
+* Any duplicate payment logic introduced.
+* Any database changes that are unnecessary because they were created specifically for the incorrect Order implementation.
+
+### Do NOT Guess
+
+If the existing architecture does not clearly define when the remaining 50% becomes payable, STOP and report:
+
+**UNRESOLVED — BUSINESS DECISION REQUIRED**
+
+Do not invent a lifecycle state or payment rule.
+
+### Implementation Rules
+
+* Do not create a second payment system if an existing payment architecture can support Quote payments.
+* Do not move Quote payment logic into the Order domain.
+* Do not alter product-order payment behavior.
+* Do not introduce new lifecycle states unless already approved.
+* Do not modify approved workflows.
+* Preserve existing Paystack integration.
+* Preserve existing webhook verification.
+* Preserve existing payment auditing.
+* Preserve existing idempotency protections.
+* Ensure the payment records can distinguish the quote's initial 50% payment from the remaining balance.
+* Ensure the quote's financial status accurately reflects the amount paid and amount outstanding.
+* Ensure webhook processing updates the correct Quote-related payment record.
+* Ensure customers cannot pay more than the outstanding quote balance through the application workflow.
+
+### Required Output
+
+Before implementation, provide:
+
+1. **Incorrect Order Implementation**
+
+   * What was implemented.
+   * Why it is outside the requested scope.
+
+2. **Correct Quote Payment Architecture**
+
+   * Existing models/services involved.
+   * Required changes.
+   * Reusable existing components.
+
+3. **Cleanup Plan**
+
+   * Incorrect changes to revert.
+   * Changes to retain.
+   * Changes to move/rework for Quotes.
+
+4. **Implementation Plan**
+
+   * Exact files to modify.
+   * Exact responsibilities of each change.
+
+Do not write code until this audit is complete and the implementation target has been confirmed as **Quote payment**.

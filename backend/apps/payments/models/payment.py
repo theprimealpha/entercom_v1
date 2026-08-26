@@ -20,7 +20,16 @@ class Payment(models.Model):
     order = models.OneToOneField(
         'orders.Order',
         on_delete=models.PROTECT,
-        related_name="payment"
+        related_name="payment",
+        null=True,
+        blank=True
+    )
+    quote = models.ForeignKey(
+        'requests.Quote',
+        on_delete=models.PROTECT,
+        related_name="payments",
+        null=True,
+        blank=True
     )
     request = models.ForeignKey(
         'requests.Request',

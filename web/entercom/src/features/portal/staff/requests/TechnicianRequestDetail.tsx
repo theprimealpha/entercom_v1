@@ -36,6 +36,13 @@ export default function TechnicianRequestDetail() {
     refetchInterval: 10000,
   });
 
+  const { data: quotes } = useQuery({
+    queryKey: ['requests', id, 'quotes'],
+    queryFn: () => requestsApi.quotes.list(id!),
+    enabled: !!id,
+    refetchInterval: 10000,
+  });
+
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['requests', id] });
 
   const pickupMutation = useMutation({
@@ -138,6 +145,29 @@ export default function TechnicianRequestDetail() {
                     <div>
                       <h3 className="text-sm font-medium text-gray-500 mb-1">Location</h3>
                       <p className="text-sm text-gray-900">{request.address}</p>
+                    </div>
+                  )}
+                  {quotes && Array.isArray(quotes) && quotes.length > 0 && (
+                    <div className="sm:col-span-2 pt-4 border-t border-gray-100">
+                      <h3 className="text-sm font-medium text-gray-500 mb-2">Quote & Payment Summary</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl">
+                        <div>
+                          <span className="block text-xs text-gray-500">Plan</span>
+                          <span className="font-semibold">{quotes[0].payment_plan === 'fifty_fifty' ? '50/50 Deposit' : quotes[0].payment_plan === 'full' ? 'Full Payment' : 'N/A'}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs text-gray-500">Total</span>
+                          <span className="font-semibold">₦{parseFloat(quotes[0].amount || 0).toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs text-gray-500">Paid</span>
+                          <span className="font-semibold text-green-600">₦{parseFloat(quotes[0].amount_paid || 0).toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="block text-xs text-gray-500">Balance</span>
+                          <span className="font-semibold text-red-600">₦{(parseFloat(quotes[0].amount || 0) - parseFloat(quotes[0].amount_paid || 0)).toLocaleString()}</span>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -356,13 +386,23 @@ function TechnicianQuotesSection({ requestId, status }: { requestId: string; sta
                   <span className={`ml-3 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize
                     ${quote.status === 'issued' ? 'bg-blue-100 text-blue-800' :
                       quote.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      quote.status === 'partially_paid' ? 'bg-green-200 text-green-900' :
+                      quote.status === 'paid' ? 'bg-green-200 text-green-900' :
                       quote.status === 'rejected' ? 'bg-red-100 text-red-800' :
                       quote.status === 'superseded' ? 'bg-gray-200 text-gray-500' :
                       'bg-gray-200 text-gray-800'}`}>
                     {quote.status}
                   </span>
                 </div>
-                <span className="font-bold text-gray-900">₦{parseFloat(quote.amount).toLocaleString()}</span>
+                <div className="text-right">
+                  <span className="block font-bold text-gray-900">₦{parseFloat(quote.amount).toLocaleString()}</span>
+                  {['approved', 'partially_paid', 'paid'].includes(quote.status) && quote.payment_plan && (
+                    <span className="block text-xs text-gray-500">Plan: {quote.payment_plan === 'fifty_fifty' ? '50/50 Deposit' : 'Full Payment'}</span>
+                  )}
+                  {['partially_paid', 'paid'].includes(quote.status) && (
+                    <span className="block text-xs text-green-600">Paid: ₦{parseFloat(quote.amount_paid).toLocaleString()}</span>
+                  )}
+                </div>
               </div>
               {idx === 0 && quote.status === 'issued' && (
                 <p className="text-xs text-purple-700 mt-2">⏳ Waiting for customer approval.</p>

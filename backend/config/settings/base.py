@@ -249,6 +249,10 @@ if REDIS_URL:
             "LOCATION": REDIS_URL,
             "OPTIONS": {
                 "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "CONNECTION_POOL_KWARGS": {
+                    "health_check_interval": 30,
+                    "retry_on_timeout": True,
+                },
             }
         }
     }

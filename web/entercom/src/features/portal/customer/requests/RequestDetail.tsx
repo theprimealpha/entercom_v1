@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { requestsApi } from '../../../../api/requests';
+import { paymentsApi } from '../../../../api/payments';
 import { useWebsocket } from '../../../../hooks/useWebsocket';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
@@ -111,8 +112,18 @@ export default function RequestDetail() {
   }
 
   const activeQuote = (Array.isArray(quotes) ? quotes : quotes?.data || [])?.find(
-    (q: any) => q.status === 'issued'
+    (q: any) => ['issued', 'approved', 'partially_paid'].includes(q.status)
   );
+
+  const initPaymentMutation = useMutation({
+    mutationFn: (plan: string) => paymentsApi.initializeQuotePayment({ quote_id: activeQuote?.id, payment_plan: plan }),
+    onSuccess: (data: any) => {
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
+      }
+    },
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Payment failed to initialize', 'error'),
+  });
 
   const resolution = resolveWorkflowState(request, 'CUSTOMER');
 
@@ -122,14 +133,15 @@ export default function RequestDetail() {
         submitMutation.mutate();
         break;
       case 'pay_now':
-        if (request.order_id && request.order_id !== 'null') {
+        if (activeQuote) {
+          document.getElementById('quote-payment')?.scrollIntoView({ behavior: 'smooth' });
+        } else if (request.order_id && request.order_id !== 'null') {
           navigate(`/portal/customer/orders/${request.order_id}`);
         } else {
-          window.showAppAlert('No order has been generated for this payment yet.', 'info');
+          window.showAppAlert('No order or quote has been generated for this payment yet.', 'info');
         }
         break;
       case 'review_quote':
-        // Scroll to quote section or handle quote directly
         document.getElementById('quote-approval')?.scrollIntoView({ behavior: 'smooth' });
         break;
       default:
@@ -231,6 +243,70 @@ export default function RequestDetail() {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            )}
+
+            {/* Quote Payment Section */}
+            {activeQuote && ['approved', 'partially_paid'].includes(activeQuote.status) && request.status !== 'completed' && request.status !== 'verified' && (
+              <div id="quote-payment" className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8 relative overflow-hidden">
+                <h2 className="text-xl font-semibold mb-4 text-gray-900">Payment Options</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Full Payment */}
+                  <div className="border border-gray-200 rounded-xl p-4 flex flex-col justify-between">
+                    <div>
+                      <h3 className="font-semibold text-lg mb-1">Pay in Full</h3>
+                      <p className="text-sm text-gray-500 mb-4">Settle the entire balance now.</p>
+                      <div className="text-2xl font-bold mb-4">₦{(parseFloat(activeQuote.amount) - (parseFloat(activeQuote.amount_paid) || 0)).toLocaleString()}</div>
+                    </div>
+                    <button
+                      onClick={() => initPaymentMutation.mutate('full')}
+                      disabled={initPaymentMutation.isPending}
+                      className="w-full py-2 bg-ess-purple text-white font-semibold rounded-lg hover:bg-ess-darkPurple transition-colors disabled:opacity-50"
+                    >
+                      {initPaymentMutation.isPending ? 'Processing...' : 'Pay in Full'}
+                    </button>
+                  </div>
+                  
+                  {/* 50/50 Deposit */}
+                  {activeQuote.status === 'approved' && (!activeQuote.amount_paid || parseFloat(activeQuote.amount_paid) === 0) && (
+                    <div className="border border-gray-200 rounded-xl p-4 flex flex-col justify-between">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1">Pay 50% Deposit</h3>
+                        <p className="text-sm text-gray-500 mb-4">Pay half now, balance on completion.</p>
+                        <div className="text-2xl font-bold mb-4">₦{(parseFloat(activeQuote.amount) / 2).toLocaleString()}</div>
+                      </div>
+                      <button
+                        onClick={() => initPaymentMutation.mutate('fifty_fifty')}
+                        disabled={initPaymentMutation.isPending}
+                        className="w-full py-2 border border-ess-purple text-ess-purple font-semibold rounded-lg hover:bg-purple-50 transition-colors disabled:opacity-50"
+                      >
+                        {initPaymentMutation.isPending ? 'Processing...' : 'Pay Deposit'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            
+            {/* Pay Balance Section for Completed Requests */}
+            {activeQuote && activeQuote.status === 'partially_paid' && ['completed', 'verified'].includes(request.status) && (
+              <div id="quote-payment" className="bg-ess-purple rounded-2xl shadow-sm border border-ess-darkPurple p-6 sm:p-8 text-white relative overflow-hidden">
+                <div className="relative z-10">
+                  <h2 className="text-xl font-semibold mb-1">Final Balance Due</h2>
+                  <p className="text-purple-100 mb-4 text-sm">The request has been completed. Please pay the remaining balance.</p>
+                  <div className="bg-white/20 inline-block px-4 py-2 rounded-lg font-mono text-2xl font-bold mb-6">
+                    ₦{(parseFloat(activeQuote.amount) - (parseFloat(activeQuote.amount_paid) || 0)).toLocaleString()}
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => initPaymentMutation.mutate('full')}
+                      disabled={initPaymentMutation.isPending}
+                      className="px-6 py-2 bg-white text-ess-purple font-semibold rounded-lg hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+                    >
+                      {initPaymentMutation.isPending ? 'Processing...' : 'Pay Balance'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

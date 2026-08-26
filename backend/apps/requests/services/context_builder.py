@@ -59,9 +59,12 @@ class QuoteContextProvider:
         quote = quotes.first()
         context.revision_count = quotes.count()
         if quote:
+            status = quote.status.lower()
             context.has_valid_quote_version = True
-            context.quote_approved = quote.status.lower() == 'approved'
-            context.quote_rejected = quote.status.lower() == 'rejected'
+            context.quote_approved = status in ['approved', 'partially_paid', 'paid']
+            context.quote_rejected = status == 'rejected'
+            if status in ['partially_paid', 'paid']:
+                context.payment_confirmed = True
         # upfront_payment_required is driven by policy, not quote presence.
         # A fixed-price category (e.g. consultation) requires payment even without a quote.
         context.upfront_payment_required = context.category_requires_payment

@@ -10,6 +10,13 @@ class QuoteStatus(models.TextChoices):
     REJECTED = "rejected", _("Rejected")
     EXPIRED = "expired", _("Expired")
     SUPERSEDED = "superseded", _("Superseded")
+    PARTIALLY_PAID = "partially_paid", _("Partially Paid")
+    PAID = "paid", _("Paid")
+
+class PaymentPlan(models.TextChoices):
+    FULL = "full", _("Full Payment")
+    FIFTY_FIFTY = "fifty_fifty", _("50/50 Deposit")
+
 
 class Quote(models.Model):
     """
@@ -25,6 +32,8 @@ class Quote(models.Model):
     
     version = models.IntegerField()
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment_plan = models.CharField(max_length=50, choices=PaymentPlan.choices, null=True, blank=True)
     status = models.CharField(max_length=50, choices=QuoteStatus.choices)
     
     expires_at = models.DateTimeField()

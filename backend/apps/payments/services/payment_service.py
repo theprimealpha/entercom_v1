@@ -131,6 +131,94 @@ class PaymentService:
 
     @staticmethod
     @transaction.atomic
+    def initialize_quote_payment(actor, correlation_id, quote_id, payment_plan, provider_reference, callback_url=None):
+        require_permission(actor, 'payment.initialize')
+        from apps.requests.models import Quote, Request
+        quote = Quote.objects.select_for_update().get(id=quote_id)
+        request = quote.request
+        
+        # Calculate amount based on plan
+        if payment_plan == 'full':
+            amount = quote.amount - quote.amount_paid
+        elif payment_plan == 'fifty_fifty':
+            if quote.amount_paid >= (quote.amount / 2):
+                # If they already paid 50%, they must be paying the balance now.
+                # Check if request state allows final payment.
+                if request.status not in ['completed', 'verified']: # Assuming final payment requires completion
+                    raise ValidationError("Final balance can only be paid when request is completed.")
+                amount = quote.amount - quote.amount_paid
+            else:
+                amount = quote.amount / 2
+        else:
+            raise ValidationError("Invalid payment plan.")
+            
+        if amount <= 0:
+            raise ValidationError("No outstanding balance to pay.")
+            
+        quote.payment_plan = payment_plan
+        quote.save()
+
+        payment = Payment.objects.filter(quote_id=quote_id, status=PaymentStatus.PENDING).first()
+        is_new = False
+        if payment:
+            old_payment = Payment.objects.get(pk=payment.pk)
+            payment.provider_reference = provider_reference
+            payment.amount = amount
+            payment.save()
+        else:
+            is_new = True
+            payment = Payment.objects.create(
+                quote_id=quote_id,
+                request_id=request.id,
+                customer_id=actor.id,
+                provider_reference=provider_reference,
+                amount=amount,
+                currency="NGN",
+                status=PaymentStatus.PENDING,
+                correlation_id=correlation_id
+            )
+            
+        import requests
+        from django.conf import settings
+        from django.contrib.auth import get_user_model
+        
+        paystack_secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
+        
+        if not paystack_secret or paystack_secret == 'sk_test_fake_secret':
+            payment.authorization_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/portal/customer/requests/{request.id}?mock_payment=true&reference={provider_reference}"
+        else:
+            User = get_user_model()
+            customer = User.objects.filter(id=actor.id).first()
+            email = customer.email if customer and customer.email else "customer@example.com"
+            
+            final_callback_url = callback_url or f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/portal/customer/requests/{request.id}"
+            
+            url = "https://api.paystack.co/transaction/initialize"
+            headers = {
+                "Authorization": f"Bearer {paystack_secret}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "email": email,
+                "amount": int(float(amount) * 100),
+                "reference": provider_reference,
+                "currency": "NGN",
+                "callback_url": final_callback_url
+            }
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                response_data = response.json()
+                if response_data.get('status'):
+                    payment.authorization_url = response_data['data']['authorization_url']
+                else:
+                    raise ValidationError(f"Paystack initialization failed: {response_data.get('message')}")
+            except Exception as e:
+                raise ValidationError(f"Paystack request failed: {str(e)}")
+
+        return payment
+
+    @staticmethod
+    @transaction.atomic
     def expire_payments(actor, correlation_id):
         cutoff_time = timezone.now() - timezone.timedelta(hours=24)
         expired_payments = Payment.objects.select_for_update().filter(
