@@ -1,9 +1,16 @@
-File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
-  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-  File "/app/apps/requests/api/urls.py", line 3, in <module>
-    from .views import RequestViewSet, RequestQuoteViewSet, RequestVerificationViewSet
-    'retrieve': Permission.REQUEST_READ,
-                ^^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: type object 'Permission' has no attribute 'REQUEST_READ'. Did you mean: 'REQUEST_CREATE'?
+I switched from the backend web service from render to railway, and on the railway log I am seeing this 
+Starting Container
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+/bin/bash: line 1: daphne: command not found
+
+
+what does this mean?
