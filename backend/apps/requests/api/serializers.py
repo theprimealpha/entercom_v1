@@ -105,7 +105,9 @@ class RequestListSerializer(serializers.Serializer):
 class QuoteListSerializer(serializers.Serializer):
     id = serializers.UUIDField()
     version = serializers.IntegerField()
-    amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    amount_paid = serializers.DecimalField(max_digits=12, decimal_places=2, default=0.0)
+    payment_plan = serializers.CharField(allow_null=True, required=False)
     status = serializers.CharField()
 
 class CreateRequestSerializer(serializers.Serializer):

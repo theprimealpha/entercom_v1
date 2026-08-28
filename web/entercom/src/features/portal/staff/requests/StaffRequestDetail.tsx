@@ -676,12 +676,12 @@ function StaffQuotesSection({ requestId, status }: { requestId: string; status: 
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="block font-bold text-gray-900">₦{parseFloat(quote.amount).toLocaleString()}</span>
+                  <span className="block font-bold text-gray-900">₦{parseFloat(quote.amount || 0).toLocaleString()}</span>
                   {['approved', 'partially_paid', 'paid'].includes(quote.status) && quote.payment_plan && (
                     <span className="block text-xs text-gray-500">Plan: {quote.payment_plan === 'fifty_fifty' ? '50/50 Deposit' : 'Full Payment'}</span>
                   )}
                   {['partially_paid', 'paid'].includes(quote.status) && (
-                    <span className="block text-xs text-green-600">Paid: ₦{parseFloat(quote.amount_paid).toLocaleString()}</span>
+                    <span className="block text-xs text-green-600">Paid: ₦{parseFloat(quote.amount_paid || 0).toLocaleString()}</span>
                   )}
                 </div>
               </div>

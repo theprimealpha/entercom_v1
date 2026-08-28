@@ -388,7 +388,7 @@ export default function RequestDetail() {
               historyEvents={
                 loadingTimeline ? [] : 
                 ensureArray(timeline).map((event: any) => ({
-                  to_state: event.state_to || event.status,
+                  to_state: event.to_state || event.new_state || event.status,
                   created_at: event.created_at,
                   reason: event.reason
                 }))

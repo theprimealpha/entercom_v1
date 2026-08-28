@@ -1,51 +1,109 @@
-safer minimal implementation is:
+on manager's portal request detail page:
+Description
+Jenskdkndkdkdk
+
+Quote & Payment Summary
+Plan
+N/A
+Total
+₦50,000
+Paid
+₦0
+Balance
+₦50,000
+Current Owner
+STAFF
 
 
 
-Audit the existing payment, quote, request state machine, orchestrator, and Celery reminder code first. 
 
- When technician work is verified, check the quote/payment records directly: 
+on the staff portal request detail page:
+REQ-A951891F
+awaiting assignment
+normal Priority
+Category
+installation
 
- Full payment already completed → transition to completed. 
+Description
+Jenskdkndkdkdk
 
- Only 50% paid → remain in/re-enter the existing awaiting_payment state. 
+Quote & Payment Summary
+Plan
+N/A
+Total
+₦50,000
+Paid
+₦0
+Balance
+₦50,000
+Current Owner
+STAFF
 
- Store/use the existing payment information to distinguish initial payment vs remaining balance rather than introducing a new lifecycle state. 
+Workflow Actions
+👷 Assign Technician
 
- When the request enters awaiting_payment after verification with an outstanding balance, schedule the existing Celery infrastructure to send a final-balance reminder. 
-
- When the reminder task runs, re-check the request and payment status. If the balance has already been paid, do nothing. If unpaid, send the reminder. 
-
- When the final payment succeeds, the existing payment-success workflow should recognize that this is the remaining balance for an already-verified request and transition it directly to completed—without going through technician assignment again. 
-
- Make the transitions idempotent so duplicate webhooks, Celery retries, or repeated payment events cannot cause duplicate completion or reminders. 
-
- Update/add tests specifically around: 
-
- 50% payment → work → final payment 
-
- 100% upfront payment 
-
- unpaid final balance 
-
- reminder execution after payment 
-
- duplicate payment webhook 
-
- duplicate Celery execution 
-
- cancelled/invalid payment 
-
- request cannot become completed while balance remains unpaid.
+Select an option
+Assign
+Cancel Request
+Quotes & Estimates
+v1paid
+₦50,000
+Paid: ₦NaN
 
 
+on the customers page
+Unknown State
+11/08/2026, 17:11:48
 
- The reminder schedule is now:
+Unknown State
+11/08/2026, 17:11:52
+
+Unknown State
+11/08/2026, 17:11:52
+
+Unknown State
+11/08/2026, 17:12:33
+
+Unknown State
+11/08/2026, 17:12:38
+
+Staff triage action: needs_quote
+
+Unknown State
+11/08/2026, 17:12:38
+
+Unknown State
+11/08/2026, 17:12:50
+
+Unknown State
+11/08/2026, 17:12:50
+
+Unknown State
+11/08/2026, 18:07:35
+
+Unknown State
+11/08/2026, 18:07:36
+
+Unknown State
+12/08/2026, 14:11:55
+
+Unknown State
+12/08/2026, 14:11:55
+
+assigned
+28/08/2026, 15:29:11
+
+Current stage
+
+
+Payment Options
+Pay Remaining Balance
+Settle the final half of the quote.
+
+₦50,000
+Pay Balance
 
 
 
-Immediately after verification: If only 50% has been paid, send a final-balance reminder immediately. 
 
-24 hours later: Celery checks the balance again and sends another reminder only if it remains unpaid. 
-
-If fully paid: No reminder is sent, and the Request can transition to completed.
+meaning that no fix was performed, I am highly dissappointed in you!
