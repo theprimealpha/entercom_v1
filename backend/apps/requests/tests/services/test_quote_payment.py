@@ -1,7 +1,8 @@
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from apps.requests.models import Request, LifecycleState, Quote, QuoteStatus, PaymentPlan
+from apps.requests.models import Request, LifecycleState, Quote, QuoteStatus
+from apps.requests.models.quote import PaymentPlan
 from apps.payments.models import Payment, PaymentStatus
 from apps.payments.services.payment_service import PaymentService
 from apps.payments.services.webhook_service import WebhookService

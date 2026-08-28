@@ -1,7 +1,8 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from django.contrib.auth import get_user_model
-from apps.requests.models import Request, LifecycleState, Quote, QuoteStatus, PaymentPlan
+from apps.requests.models import Request, LifecycleState, Quote, QuoteStatus
+from apps.requests.models.quote import PaymentPlan
 from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
 from apps.requests.services.quote_service import QuoteService
 from apps.requests.tasks.reminder_tasks import send_final_balance_reminder
