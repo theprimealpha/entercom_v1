@@ -269,7 +269,7 @@ export default function TechnicianRequestDetail() {
             
             {/* Inspection section */}
             {['awaiting_quote', 'awaiting_customer_approval', 'awaiting_assignment', 'assigned', 'in_progress', 'pending_verification', 'completed'].includes(s) && (
-              <TechnicianInspectionSection requestId={request.id} status={s} />
+              <TechnicianInspectionSection requestId={request.id} />
             )}
 
           </div>
@@ -423,7 +423,7 @@ function TechnicianQuotesSection({ requestId, status }: { requestId: string; sta
 }
 
 
-export function TechnicianInspectionSection({ requestId, status }: { requestId: string; status: string }) {
+export function TechnicianInspectionSection({ requestId }: { requestId: string }) {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({

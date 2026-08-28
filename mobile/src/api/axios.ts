@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://entercom-v1.onrender.com/api/v1';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://entercomv1-production.up.railway.app';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

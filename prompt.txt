@@ -1,16 +1,16 @@
-I switched from the backend web service from render to railway, and on the railway log I am seeing this 
-Starting Container
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
-/bin/bash: line 1: daphne: command not found
+npm warn allow-scripts   esbuild@0.27.2 (postinstall: node install.js)
+npm warn allow-scripts
+npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+Running "npm run build"
+> entercom@0.0.0 build
+> tsc -b && vite build
+src/features/portal/manager/recruitment/ApplicationDetail.tsx(3,34): error TS6133: 'XCircle' is declared but its value is never read.
+src/features/portal/manager/recruitment/ApplicationDetail.tsx(3,77): error TS6133: 'AlertCircle' is declared but its value is never read.
+src/features/portal/manager/recruitment/ApplicationDetail.tsx(33,17): error TS6133: 'data' is declared but its value is never read.
+src/features/portal/staff/requests/TechnicianRequestDetail.tsx(426,58): error TS6133: 'status' is declared but its value is never read.
+Error: Command "npm run build" exited with 2
 
 
-what does this mean?
+
+
+and also how do I set the websocket url for vercel

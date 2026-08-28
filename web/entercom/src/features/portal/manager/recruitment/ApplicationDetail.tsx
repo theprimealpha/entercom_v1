@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, XCircle, Clock, FileText, User, Briefcase, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, FileText, User, Briefcase } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/PageHeader';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../../api/axios';
@@ -30,7 +30,7 @@ export default function ApplicationDetail() {
       });
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['technician-application', id] });
       queryClient.invalidateQueries({ queryKey: ['admin-technician-applications'] });
       queryClient.invalidateQueries({ queryKey: ['manager-technician-applications'] });
