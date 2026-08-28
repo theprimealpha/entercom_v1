@@ -542,7 +542,7 @@ class RequestInspectionViewSet(viewsets.ViewSet):
     permission_classes = [GenericRBACPermission]
     
     rbac_action_map = {
-        'retrieve': Permission.REQUEST_READ,
+        'retrieve': None,
         'update': Permission.REQUEST_UPDATE,
         'upload_photo': Permission.REQUEST_UPDATE,
     }
