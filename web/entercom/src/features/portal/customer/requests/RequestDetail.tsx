@@ -91,6 +91,20 @@ export default function RequestDetail() {
     onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Quote action failed', 'error'),
   });
 
+  const activeQuote = (Array.isArray(quotes) ? quotes : quotes?.data || [])?.find(
+    (q: any) => ['issued', 'approved', 'partially_paid'].includes(q.status)
+  );
+
+  const initPaymentMutation = useMutation({
+    mutationFn: (plan: string) => paymentsApi.initializeQuotePayment({ quote_id: activeQuote?.id, payment_plan: plan }),
+    onSuccess: (data: any) => {
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
+      }
+    },
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Payment failed to initialize', 'error'),
+  });
+
   if (isLoading) {
     return (
       <PageContainer>
@@ -111,19 +125,7 @@ export default function RequestDetail() {
     );
   }
 
-  const activeQuote = (Array.isArray(quotes) ? quotes : quotes?.data || [])?.find(
-    (q: any) => ['issued', 'approved', 'partially_paid'].includes(q.status)
-  );
 
-  const initPaymentMutation = useMutation({
-    mutationFn: (plan: string) => paymentsApi.initializeQuotePayment({ quote_id: activeQuote?.id, payment_plan: plan }),
-    onSuccess: (data: any) => {
-      if (data.authorization_url) {
-        window.location.href = data.authorization_url;
-      }
-    },
-    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Payment failed to initialize', 'error'),
-  });
 
   const resolution = resolveWorkflowState(request, 'CUSTOMER');
 
