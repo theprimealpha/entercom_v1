@@ -1,20 +1,51 @@
-Unexpected Application Error!
-Minified React error #310; visit https://react.dev/errors/310 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
-Error: Minified React error #310; visit https://react.dev/errors/310 for the full message or use the non-minified dev environment for full errors and additional helpful warnings.
-    at Et (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:9:49378)
-    at zi (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:9:50444)
-    at Object.useState (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:9:62658)
-    at Ob.Te.useState (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:2:9378)
-    at Xn (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:21:54917)
-    at ie (https://entercom-v1.vercel.app/assets/RequestDetail-Bc9VnMsJ.js:1:3552)
-    at Yu (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:9:48100)
-    at fc (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:9:70896)
-    at Dm (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:9:81229)
-    at up (https://entercom-v1.vercel.app/assets/index-I9yje9e1.js:9:116978)
-💿 Hey developer 👋
-
-You can provide a way better UX than this when your a
+safer minimal implementation is:
 
 
 
-here is the url: https://entercom-v1.vercel.app/portal/customer/requests/be0f777f-fab9-4f41-9b69-733f2d5f1445
+Audit the existing payment, quote, request state machine, orchestrator, and Celery reminder code first. 
+
+ When technician work is verified, check the quote/payment records directly: 
+
+ Full payment already completed → transition to completed. 
+
+ Only 50% paid → remain in/re-enter the existing awaiting_payment state. 
+
+ Store/use the existing payment information to distinguish initial payment vs remaining balance rather than introducing a new lifecycle state. 
+
+ When the request enters awaiting_payment after verification with an outstanding balance, schedule the existing Celery infrastructure to send a final-balance reminder. 
+
+ When the reminder task runs, re-check the request and payment status. If the balance has already been paid, do nothing. If unpaid, send the reminder. 
+
+ When the final payment succeeds, the existing payment-success workflow should recognize that this is the remaining balance for an already-verified request and transition it directly to completed—without going through technician assignment again. 
+
+ Make the transitions idempotent so duplicate webhooks, Celery retries, or repeated payment events cannot cause duplicate completion or reminders. 
+
+ Update/add tests specifically around: 
+
+ 50% payment → work → final payment 
+
+ 100% upfront payment 
+
+ unpaid final balance 
+
+ reminder execution after payment 
+
+ duplicate payment webhook 
+
+ duplicate Celery execution 
+
+ cancelled/invalid payment 
+
+ request cannot become completed while balance remains unpaid.
+
+
+
+ The reminder schedule is now:
+
+
+
+Immediately after verification: If only 50% has been paid, send a final-balance reminder immediately. 
+
+24 hours later: Celery checks the balance again and sends another reminder only if it remains unpaid. 
+
+If fully paid: No reminder is sent, and the Request can transition to completed.

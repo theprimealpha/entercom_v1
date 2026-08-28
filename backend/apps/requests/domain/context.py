@@ -32,6 +32,8 @@ class RequestContext:
     
     # Payment / Order Facts
     payment_confirmed: bool = False
+    is_fully_paid: bool = False
+    is_partially_paid: bool = False
     has_order: bool = False
     order_fulfilled: bool = False
     order_cancelled: bool = False
@@ -40,6 +42,7 @@ class RequestContext:
     evidence_uploaded: bool = False
     qa_pass: bool = False
     qa_fail: bool = False
+    work_verified: bool = False
     audit_justification_provided: bool = False
     
     # Generic Triggers

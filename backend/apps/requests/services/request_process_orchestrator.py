@@ -97,6 +97,13 @@ class RequestProcessOrchestrator:
                     updates={"status": ns.value if hasattr(ns, 'value') else ns}
                 ))
 
+                if new_status == LifecycleState.AWAITING_PAYMENT and prev_status == LifecycleState.PENDING_VERIFICATION:
+                    from apps.requests.tasks.reminder_tasks import send_final_balance_reminder
+                    # Send immediate reminder
+                    transaction.on_commit(lambda r_id=request.id: send_final_balance_reminder.delay(r_id))
+                    # Schedule 24h reminder
+                    transaction.on_commit(lambda r_id=request.id: send_final_balance_reminder.apply_async(args=[r_id], countdown=86400))
+
                 if new_status == LifecycleState.COMPLETED:
                     transaction.on_commit(lambda r_id=request.id, cid=request.customer_id: DispatchOrchestrator.dispatch_event(
                         event_type="request_completed",

@@ -13,7 +13,8 @@ export const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({ currentStatu
   // We can enrich the history with upcoming states based on a typical linear flow,
   // but showing actual history + current state prominently is usually best.
   
-  const mappedEvents = historyEvents.map((evt, i) => ({
+  const stateEvents = historyEvents.filter((e: any) => !e.type || e.type === 'state_change');
+  const mappedEvents = stateEvents.map((evt, i) => ({
     id: `history-${i}`,
     title: evt.to_state ? evt.to_state.replace(/_/g, ' ') : 'Unknown State',
     date: evt.created_at,
@@ -22,7 +23,7 @@ export const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({ currentStatu
   }));
 
   // If the current status isn't the last history event (shouldn't happen, but just in case)
-  const isCurrentInHistory = historyEvents.some(e => e.to_state === currentStatus);
+  const isCurrentInHistory = stateEvents.some(e => e.to_state === currentStatus);
   if (!isCurrentInHistory && currentStatus) {
     mappedEvents.push({
       id: 'current',

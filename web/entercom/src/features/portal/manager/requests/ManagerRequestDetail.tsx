@@ -143,25 +143,25 @@ export default function ManagerRequestDetail() {
                       <p className="text-sm text-gray-900">{request.address}</p>
                     </div>
                   )}
-                  {quotes && Array.isArray(quotes) && quotes.length > 0 && (
+                  {ensureArray(quotes).length > 0 && (
                     <div className="sm:col-span-2 pt-4 border-t border-gray-100">
                       <h3 className="text-sm font-medium text-gray-500 mb-2">Quote & Payment Summary</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded-xl">
                         <div>
                           <span className="block text-xs text-gray-500">Plan</span>
-                          <span className="font-semibold">{quotes[0].payment_plan === 'fifty_fifty' ? '50/50 Deposit' : quotes[0].payment_plan === 'full' ? 'Full Payment' : 'N/A'}</span>
+                          <span className="font-semibold">{ensureArray(quotes)[0].payment_plan === 'fifty_fifty' ? '50/50 Deposit' : ensureArray(quotes)[0].payment_plan === 'full' ? 'Full Payment' : 'N/A'}</span>
                         </div>
                         <div>
                           <span className="block text-xs text-gray-500">Total</span>
-                          <span className="font-semibold">₦{parseFloat(quotes[0].amount || 0).toLocaleString()}</span>
+                          <span className="font-semibold">₦{parseFloat(ensureArray(quotes)[0].amount || 0).toLocaleString()}</span>
                         </div>
                         <div>
                           <span className="block text-xs text-gray-500">Paid</span>
-                          <span className="font-semibold text-green-600">₦{parseFloat(quotes[0].amount_paid || 0).toLocaleString()}</span>
+                          <span className="font-semibold text-green-600">₦{parseFloat(ensureArray(quotes)[0].amount_paid || 0).toLocaleString()}</span>
                         </div>
                         <div>
                           <span className="block text-xs text-gray-500">Balance</span>
-                          <span className="font-semibold text-red-600">₦{(parseFloat(quotes[0].amount || 0) - parseFloat(quotes[0].amount_paid || 0)).toLocaleString()}</span>
+                          <span className="font-semibold text-red-600">₦{(parseFloat(ensureArray(quotes)[0].amount || 0) - parseFloat(ensureArray(quotes)[0].amount_paid || 0)).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>

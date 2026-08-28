@@ -110,18 +110,8 @@ class TestQuotePayment:
         awaiting_payment_request.refresh_from_db()
         assert awaiting_payment_request.status == LifecycleState.AWAITING_ASSIGNMENT
         
-        # Second half requires request to be completed
-        with pytest.raises(ValidationError, match="Final balance can only be paid when request is completed."):
-            PaymentService.initialize_quote_payment(
-                actor=customer_user,
-                correlation_id="cor-5",
-                quote_id=quote.id,
-                payment_plan=PaymentPlan.FIFTY_FIFTY,
-                provider_reference="REF-HALF-02"
-            )
-            
-        # Move to completed
-        awaiting_payment_request.status = LifecycleState.COMPLETED
+        # In the new flow, the request re-enters AWAITING_PAYMENT when verified
+        awaiting_payment_request.status = LifecycleState.AWAITING_PAYMENT
         awaiting_payment_request.save()
         
         # Now we can pay balance

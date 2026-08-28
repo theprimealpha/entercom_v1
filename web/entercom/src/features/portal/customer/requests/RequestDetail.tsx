@@ -91,6 +91,8 @@ export default function RequestDetail() {
     onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Quote action failed', 'error'),
   });
 
+
+
   const activeQuote = (Array.isArray(quotes) ? quotes : quotes?.data || [])?.find(
     (q: any) => ['issued', 'approved', 'partially_paid'].includes(q.status)
   );
@@ -257,8 +259,8 @@ export default function RequestDetail() {
                   {/* Full Payment */}
                   <div className="border border-gray-200 rounded-xl p-4 flex flex-col justify-between">
                     <div>
-                      <h3 className="font-semibold text-lg mb-1">Pay in Full</h3>
-                      <p className="text-sm text-gray-500 mb-4">Settle the entire balance now.</p>
+                      <h3 className="font-semibold text-lg mb-1">{activeQuote.status === 'partially_paid' ? 'Pay Remaining Balance' : 'Pay in Full'}</h3>
+                      <p className="text-sm text-gray-500 mb-4">{activeQuote.status === 'partially_paid' ? 'Settle the final half of the quote.' : 'Settle the entire balance now.'}</p>
                       <div className="text-2xl font-bold mb-4">₦{(parseFloat(activeQuote.amount) - (parseFloat(activeQuote.amount_paid) || 0)).toLocaleString()}</div>
                     </div>
                     <button
@@ -266,7 +268,7 @@ export default function RequestDetail() {
                       disabled={initPaymentMutation.isPending}
                       className="w-full py-2 bg-ess-purple text-white font-semibold rounded-lg hover:bg-ess-darkPurple transition-colors disabled:opacity-50"
                     >
-                      {initPaymentMutation.isPending ? 'Processing...' : 'Pay in Full'}
+                      {initPaymentMutation.isPending ? 'Processing...' : (activeQuote.status === 'partially_paid' ? 'Pay Balance' : 'Pay in Full')}
                     </button>
                   </div>
                   

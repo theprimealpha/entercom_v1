@@ -144,7 +144,7 @@ class PaymentService:
             if quote.amount_paid >= (quote.amount / 2):
                 # If they already paid 50%, they must be paying the balance now.
                 # Check if request state allows final payment.
-                if request.status not in ['completed', 'verified']: # Assuming final payment requires completion
+                if request.status not in ['completed', 'verified', 'awaiting_payment']:
                     raise ValidationError("Final balance can only be paid when request is completed.")
                 amount = quote.amount - quote.amount_paid
             else:

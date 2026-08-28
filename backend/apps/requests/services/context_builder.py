@@ -84,6 +84,8 @@ class VerificationContextProvider:
             if verification:
                 context.evidence_uploaded = verification.evidence.exists()
                 context.qa_pass = verification.status == 'approved'
+                if context.qa_pass:
+                    context.work_verified = True
                 context.qa_fail = verification.status == 'rejected'
         except ImportError:
             pass
