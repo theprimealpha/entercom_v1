@@ -128,10 +128,13 @@ class RequestService:
     @staticmethod
     def get_timeline(request_id: Any, user: User) -> List[Dict[str, Any]]:
         """
-        Retrieves the chronologically ordered state history for a request.
+        Retrieves the chronologically ordered state history and audit events for a request.
         Filters out internal staff actions for customers.
         """
-        history = StateHistory.objects.filter(request_id=request_id).order_by('timestamp')
+        from apps.audit_logs.models import AuditLogEntry
+
+        history = StateHistory.objects.filter(request_id=request_id)
+        audit_logs = AuditLogEntry.objects.filter(resource_type='request', resource_id=str(request_id))
         
         timeline = []
         is_customer = not hasattr(user, 'role') or user.role.upper() == 'CUSTOMER'
@@ -146,12 +149,31 @@ class RequestService:
         for h in history:
             if is_customer and h.to_state in internal_states:
                 continue
+            actor_name = "System"
+            if h.actor:
+                actor_name = getattr(h.actor, 'get_full_name', lambda: getattr(h.actor, 'username', 'User'))()
             timeline.append({
+                "type": "state_change",
+                "action": f"{h.from_state} → {h.to_state}",
                 "from_state": h.from_state, 
                 "to_state": h.to_state, 
                 "reason": h.reason, 
+                "actor": actor_name,
                 "created_at": h.timestamp
             })
+            
+        for a in audit_logs:
+            actor_name = a.actor_name or (a.actor_email_snapshot if a.actor_email_snapshot else "System")
+            timeline.append({
+                "type": "audit_action",
+                "action": a.action,
+                "actor": actor_name,
+                "metadata": a.metadata,
+                "created_at": a.timestamp
+            })
+
+        # Sort by timestamp
+        timeline.sort(key=lambda x: x["created_at"])
             
         return timeline
 

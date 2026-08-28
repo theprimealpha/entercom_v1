@@ -110,5 +110,26 @@ export const requestsApi = {
       const { data } = await apiClient.post(`/requests/${requestId}/quote/customer-action/`, { action, reason });
       return normalizeData(data);
     }
+  },
+  inspection: {
+    get: async (requestId: string) => {
+      const { data } = await apiClient.get(`/requests/${requestId}/inspection/`);
+      return normalizeData(data);
+    },
+    update: async (requestId: string, payload: any) => {
+      const { data } = await apiClient.patch(`/requests/${requestId}/inspection/`, payload);
+      return normalizeData(data);
+    },
+    uploadPhoto: async (requestId: string, file: File, description?: string) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      if (description) formData.append('description', description);
+      const { data } = await apiClient.post(`/requests/${requestId}/inspection/photo/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return normalizeData(data);
+    }
   }
 };

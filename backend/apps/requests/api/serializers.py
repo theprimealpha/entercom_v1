@@ -165,3 +165,24 @@ class EscalationResolveSerializer(serializers.Serializer):
         default="MANUAL",
         help_text="Short description of how the escalation was resolved."
     )
+
+
+from apps.requests.models.inspection import InspectionReport, InspectionPhoto
+
+class InspectionPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InspectionPhoto
+        fields = ['id', 'file_url', 'file', 'description', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+class InspectionReportSerializer(serializers.ModelSerializer):
+    photos = InspectionPhotoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = InspectionReport
+        fields = [
+            'id', 'site_observations', 'required_materials', 
+            'required_tools', 'installation_notes', 'recommendations',
+            'created_at', 'updated_at', 'created_by', 'photos'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'created_by']

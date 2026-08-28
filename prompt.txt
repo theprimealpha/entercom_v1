@@ -1,109 +1,553 @@
-## CORRECTION — PAYMENT MUST BE IMPLEMENTED ON QUOTES, NOT ORDERS
+# REQUEST DETAILS OPTIMIZATION — IMPLEMENTATION
 
-The previous implementation targeted **Order payment**, but that is NOT the requirement.
+You are a Senior Django + React/TypeScript Engineer working on the Entercom platform.
 
-STOP and audit the implementation before making any further changes.
+The Request Details audit has been completed.
 
-### Correct Business Requirement
+You are now authorized to implement the approved changes.
 
-The payment model being implemented is for **Request Quotes**.
+---
 
-When a customer receives an approved quote, they must have two payment options:
+# CRITICAL SCOPE
 
-1. **Pay 50% deposit**
+This task is **STRICTLY FOR THE REQUEST DOMAIN**.
 
-   * Customer pays 50% of the quote total.
-   * The remaining 50% becomes outstanding.
-   * The request may proceed through the approved post-payment workflow.
+Do not redesign or modify unrelated systems.
 
-2. **Pay 100% upfront**
+Do NOT implement or modify:
 
-   * Customer pays the entire quote total.
-   * No remaining quote balance exists.
+* Orders
+* Payments
+* Bookings
+* Recruitment
+* Support Chat
+* AI Assistant
+* Analytics
+* Notifications
+* Global user management
+* Technician management
+* Staff management
+* Manager management
 
-After the work is completed, if the customer selected the 50% option, the remaining 50% must become payable.
+You may use existing infrastructure from these systems only when it is already a dependency of the Request domain.
 
-### Critical Scope Rule
+If a change is not directly required for the Request Details optimization:
 
-The implementation MUST operate on:
+**DO NOT MODIFY IT.**
 
-**Request → Quote → Quote Payment**
+---
 
-It MUST NOT implement this requirement through:
+# AUTHORITATIVE AUDIT FINDINGS
 
-**Order → Order Payment**
+The current system contains:
 
-Do not replace, redesign, or modify the existing product-order payment workflow unless the existing architecture explicitly requires a shared payment mechanism.
+### Request models
 
-### Required Audit
+* Request
+* Verification
+* Evidence
+* Quote
+* StateHistory
+* Escalation
 
-Before changing anything:
+### Request services
 
-1. Find the existing Quote model.
-2. Find QuoteService.
-3. Find quote approval flow.
-4. Find existing quote payment logic.
-5. Find the payment model/service currently associated with quotes.
-6. Find the request state transition that occurs after quote payment.
-7. Find the existing Order payment implementation.
-8. Determine exactly which changes from the previous implementation incorrectly belong to Orders.
+* RequestService
+* QuoteService
+* VerificationService
 
-Report:
+### Existing audit infrastructure
 
-* Files incorrectly modified for Order payment.
-* Files that should actually be modified for Quote payment.
-* Existing quote-payment functionality that can be reused.
-* Any duplicate payment logic introduced.
-* Any database changes that are unnecessary because they were created specifically for the incorrect Order implementation.
+There is already a global immutable `AuditLogEntry` system.
 
-### Do NOT Guess
+It records meaningful system actions through the existing audit mechanism.
 
-If the existing architecture does not clearly define when the remaining 50% becomes payable, STOP and report:
+### Existing Request timeline
 
-**UNRESOLVED — BUSINESS DECISION REQUIRED**
+The current Request timeline only displays `StateHistory`.
 
-Do not invent a lifecycle state or payment rule.
+It therefore shows lifecycle transitions but does not expose other meaningful Request actions already recorded by `AuditLogEntry`.
 
-### Implementation Rules
+### Existing Evidence
 
-* Do not create a second payment system if an existing payment architecture can support Quote payments.
-* Do not move Quote payment logic into the Order domain.
-* Do not alter product-order payment behavior.
-* Do not introduce new lifecycle states unless already approved.
-* Do not modify approved workflows.
-* Preserve existing Paystack integration.
-* Preserve existing webhook verification.
-* Preserve existing payment auditing.
-* Preserve existing idempotency protections.
-* Ensure the payment records can distinguish the quote's initial 50% payment from the remaining balance.
-* Ensure the quote's financial status accurately reflects the amount paid and amount outstanding.
-* Ensure webhook processing updates the correct Quote-related payment record.
-* Ensure customers cannot pay more than the outstanding quote balance through the application workflow.
+`Evidence` currently belongs specifically to `Verification`.
 
-### Required Output
+It supports photos and other existing evidence types.
 
-Before implementation, provide:
+---
 
-1. **Incorrect Order Implementation**
+# APPROVED IMPLEMENTATION
 
-   * What was implemented.
-   * Why it is outside the requested scope.
+Implement ONLY these two improvements:
 
-2. **Correct Quote Payment Architecture**
+## 1. Request Inspection / Installation Handoff
 
-   * Existing models/services involved.
-   * Required changes.
-   * Reusable existing components.
+## 2. Unified Request Activity Timeline
 
-3. **Cleanup Plan**
+---
 
-   * Incorrect changes to revert.
-   * Changes to retain.
-   * Changes to move/rework for Quotes.
+# 1. REQUEST INSPECTION / INSTALLATION HANDOFF
 
-4. **Implementation Plan**
+There is currently no dedicated inspection data model.
 
-   * Exact files to modify.
-   * Exact responsibilities of each change.
+Create the **minimum new Request-specific structure** necessary to store an inspection report associated with a Request.
 
-Do not write code until this audit is complete and the implementation target has been confirmed as **Quote payment**.
+The purpose is:
+
+> The inspecting/consulting technician should be able to document the site thoroughly enough that the installing technician can understand the job almost as if they personally performed the inspection.
+
+The inspection report should support the following approved information categories:
+
+### Site Conditions / Observations
+
+Information discovered by the inspecting technician about the installation site.
+
+### Required Materials
+
+Materials/components required for the planned work.
+
+### Required Tools
+
+Tools required by the installing technician.
+
+### Installation Notes / Process
+
+Practical instructions and observations describing how the installation should be approached.
+
+### Inspector Recommendations
+
+Recommendations made by the inspecting technician based on the site inspection.
+
+Do not invent additional business requirements.
+
+Do not introduce lifecycle states.
+
+Do not change the Request workflow.
+
+---
+
+# INSPECTION PHOTOS
+
+Inspection photos are REQUIRED.
+
+The installing technician should be able to see the inspection photos from Request Details.
+
+Use the existing media/storage conventions where possible.
+
+The photos must remain associated with the Request inspection/handoff rather than being incorrectly treated as unrelated verification evidence.
+
+If the existing Evidence model cannot safely support this relationship without breaking existing behavior, create the smallest Request-specific inspection evidence structure necessary.
+
+Do not genericize the entire Evidence system unless there is no safe minimal alternative.
+
+---
+
+# VIDEO — DO NOT IMPLEMENT
+
+Video support has explicitly been removed from this phase.
+
+Do NOT implement:
+
+* Video uploads
+* MP4 support
+* Video streaming
+* Video transcoding
+* Chunked video uploads
+* Video previews
+* Video processing infrastructure
+
+Do not add video fields.
+
+Do not add video-related dependencies.
+
+Do not create a media architecture for video.
+
+---
+
+# INSPECTION UI
+
+Update the existing Request Details experience.
+
+Do not create an entirely separate application.
+
+Add a clear section such as:
+
+**Site Inspection**
+
+It should expose:
+
+* Site observations
+* Required materials
+* Required tools
+* Installation notes
+* Inspector recommendations
+* Inspection photos
+
+The UI should be optimized for the people who actually need the information.
+
+### Installing Technician
+
+The technician should be able to quickly understand:
+
+> What did the inspector see?
+
+> What needs to be installed?
+
+> What tools and materials are required?
+
+> How should the installation be approached?
+
+> What did the inspector recommend?
+
+> What does the site look like?
+
+Avoid presenting the information as one huge block of text.
+
+Use clear sections/cards/accordions where appropriate.
+
+---
+
+# INSPECTION PERMISSIONS
+
+Reuse the existing Request and technician permission architecture.
+
+Do not invent new roles or permission systems.
+
+Follow existing ownership and authorization rules.
+
+Only users already authorized to perform the relevant Request inspection/consultation operation should be allowed to create or modify the inspection information.
+
+Users who need to consume the inspection information should be able to view it according to their existing Request permissions.
+
+Do not weaken existing Request security.
+
+---
+
+# 2. UNIFIED REQUEST ACTIVITY TIMELINE
+
+The current Request timeline uses `StateHistory`.
+
+Do NOT replace it.
+
+Extend the existing Request timeline so it can combine:
+
+### StateHistory
+
+Existing lifecycle transitions:
+
+* Previous state
+* New state
+* Reason
+* Timestamp
+* Existing actor information
+
+AND
+
+### AuditLogEntry
+
+Existing Request-scoped audit actions where:
+
+* `resource_type = request`
+* `resource_id = request_id`
+
+Use the existing immutable audit records.
+
+Do not create another audit system.
+
+---
+
+# TIMELINE BEHAVIOR
+
+The final Request timeline should present meaningful Request activity in chronological order.
+
+For example:
+
+```text
+Request submitted
+↓
+Staff reviewed request
+↓
+Inspection completed
+↓
+Inspection report added
+↓
+Inspection photos uploaded
+↓
+Quote created
+↓
+Payment received
+↓
+Technician assigned
+↓
+Technician accepted assignment
+↓
+Verification submitted
+```
+
+These are examples only.
+
+Do not invent events that are not actually present in the existing system.
+
+Use the events/actions that actually exist.
+
+---
+
+# TIMELINE DATA
+
+Each timeline entry should expose, where available:
+
+* Action
+* Actor
+* Timestamp
+* Relevant details
+* State transition information when applicable
+
+Clearly distinguish lifecycle transitions from other actions where useful.
+
+For example:
+
+**STATUS CHANGE**
+
+`submitted → staff_review`
+
+or:
+
+**REQUEST ACTION**
+
+`inspection_report.created`
+
+Do not expose raw internal database structures unnecessarily.
+
+The timeline should be understandable to the user.
+
+---
+
+# IMPORTANT AUDIT RULE
+
+The Request timeline should NOT blindly display every global audit record.
+
+Only include audit records that are genuinely related to the Request and meaningful for the Request Details experience.
+
+If the existing audit system already provides suitable Request-scoped records, reuse them.
+
+Do not modify global audit behavior just to make this feature work.
+
+---
+
+# BACKEND IMPLEMENTATION
+
+Modify only the Request-related backend components necessary.
+
+Potential areas include:
+
+* `backend/apps/requests/models/`
+* `backend/apps/requests/services/`
+* `backend/apps/requests/serializers/`
+* `backend/apps/requests/views/`
+* Request-specific permissions
+* Request-specific tests
+
+Use the actual repository structure.
+
+Do not assume filenames.
+
+---
+
+# FRONTEND IMPLEMENTATION
+
+Update the existing Request Details interfaces:
+
+* Customer Request Details
+* Technician Request Details
+* Staff Request Details
+* Manager Request Details
+
+Only add the inspection/timeline UI where appropriate according to existing permissions and UX.
+
+Do not redesign unrelated portal pages.
+
+---
+
+# DATA DESIGN RULES
+
+Before creating a new model:
+
+1. Confirm that the existing Request models cannot safely represent the inspection data.
+2. Confirm that an extension is preferable to a new model.
+3. If a new model is necessary, keep it minimal.
+4. Do not add speculative fields.
+5. Do not add generic abstractions without a demonstrated need.
+
+The inspection report must belong directly to the Request.
+
+Do not attach it to Orders, Payments, Bookings, or other domains.
+
+---
+
+# MIGRATIONS
+
+Create the required Django migration(s) for the Request changes.
+
+Do not modify unrelated migrations.
+
+Ensure the migration is safe and consistent with the existing database conventions.
+
+---
+
+# API
+
+Extend existing Request APIs where practical.
+
+Do not create duplicate endpoints.
+
+Only create a new Request-specific endpoint if the existing API structure cannot safely support the functionality.
+
+Inspection data must be:
+
+* creatable/updatable by authorized users
+* retrievable from Request Details
+* associated with the correct Request
+
+The unified timeline must be retrievable through the existing Request timeline mechanism where possible.
+
+---
+
+# TESTING
+
+Add or update Request-specific tests for:
+
+### Inspection
+
+* Inspection report creation
+* Inspection report retrieval
+* Inspection report update
+* Request association
+* Required materials
+* Required tools
+* Site observations
+* Installation notes
+* Recommendations
+* Inspection photo upload
+* Inspection photo retrieval
+* Permission enforcement
+
+### Timeline
+
+* Existing StateHistory still appears
+* Request audit actions appear
+* Entries are correctly ordered
+* State transitions remain correct
+* Unrelated audit records do not appear
+* Actor information is correct
+* Timestamps are correct
+
+### Regression
+
+Verify that:
+
+* Existing Request creation still works
+* Existing Request lifecycle still works
+* Existing Request permissions still work
+* Existing verification still works
+* Existing evidence still works
+* Existing quote flow remains untouched
+* Existing assignment flow remains untouched
+
+---
+
+# UI/UX REQUIREMENTS
+
+The new Request Details sections must be:
+
+* Mobile responsive
+* Clear
+* Scannable
+* Consistent with the existing Entercom design system
+* Accessible
+* Easy for technicians to consume quickly
+
+For inspection photos:
+
+* Show thumbnails
+* Allow opening a larger preview
+* Handle missing/failed images gracefully
+
+For long inspection notes:
+
+* Do not allow the page to become visually overwhelming
+* Use collapsible sections if necessary
+
+For the activity timeline:
+
+* Use timestamps
+* Use clear action labels
+* Use visual differentiation between status changes and other actions
+* Keep the newest/relevant activity easy to understand
+
+---
+
+# STRICT IMPLEMENTATION RULES
+
+1. Do not introduce new Request lifecycle states.
+2. Do not modify approved Request workflows.
+3. Do not redesign the Request domain.
+4. Do not modify unrelated domains.
+5. Do not create a second audit system.
+6. Do not create a generic media system.
+7. Do not implement video.
+8. Do not invent business rules.
+9. Do not invent permissions.
+10. Do not duplicate existing APIs.
+11. Do not duplicate existing models unnecessarily.
+12. Reuse existing Request infrastructure.
+13. Preserve backward compatibility.
+14. Make the smallest safe implementation possible.
+15. If documentation and repository behavior conflict, STOP and report the conflict before making a business-rule decision.
+
+---
+
+# FINAL REPORT
+
+After implementation provide:
+
+## 1. Files Changed
+
+List every modified/created file.
+
+## 2. Inspection Implementation
+
+Explain exactly how the inspection handoff was implemented.
+
+## 3. Photo Implementation
+
+Explain how inspection photos are stored and retrieved.
+
+Explicitly confirm:
+
+**Video was not implemented.**
+
+## 4. Timeline Implementation
+
+Explain how StateHistory and Request-scoped AuditLogEntry records are combined.
+
+## 5. API Changes
+
+List only Request-related API changes.
+
+## 6. Permission Changes
+
+List any Request-specific permission changes.
+
+## 7. Tests
+
+List tests added/updated and their results.
+
+## 8. Regression Verification
+
+Confirm existing Request functionality remains intact.
+
+## 9. Unmodified Domains
+
+Explicitly confirm that Orders, Payments, Bookings, Support Chat, AI, Notifications, Recruitment, Analytics, and other unrelated domains were not redesigned or modified.
+
+The final implementation must feel like a **minimal optimization of the existing Request system**, not a new Request system.

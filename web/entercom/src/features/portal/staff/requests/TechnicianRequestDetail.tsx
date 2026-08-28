@@ -266,6 +266,11 @@ export default function TechnicianRequestDetail() {
             {['awaiting_quote', 'awaiting_customer_approval', 'awaiting_assignment', 'assigned', 'in_progress'].includes(s) && (
               <TechnicianQuotesSection requestId={request.id} status={s} />
             )}
+            
+            {/* Inspection section */}
+            {['awaiting_quote', 'awaiting_customer_approval', 'awaiting_assignment', 'assigned', 'in_progress', 'pending_verification', 'completed'].includes(s) && (
+              <TechnicianInspectionSection requestId={request.id} status={s} />
+            )}
 
           </div>
 
@@ -416,3 +421,180 @@ function TechnicianQuotesSection({ requestId, status }: { requestId: string; sta
     </div>
   );
 }
+
+
+export function TechnicianInspectionSection({ requestId, status }: { requestId: string; status: string }) {
+  const queryClient = useQueryClient();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    site_observations: '',
+    required_materials: '',
+    required_tools: '',
+    installation_notes: '',
+    recommendations: ''
+  });
+  
+  const { data: inspection, isLoading } = useQuery({
+    queryKey: ['requests', requestId, 'inspection'],
+    queryFn: () => requestsApi.inspection.get(requestId).catch(() => null),
+  });
+
+  useEffect(() => {
+    if (inspection && !isEditing) {
+      setFormData({
+        site_observations: inspection.site_observations || '',
+        required_materials: inspection.required_materials || '',
+        required_tools: inspection.required_tools || '',
+        installation_notes: inspection.installation_notes || '',
+        recommendations: inspection.recommendations || ''
+      });
+    }
+  }, [inspection, isEditing]);
+
+  const updateMutation = useMutation({
+    mutationFn: (data: any) => requestsApi.inspection.update(requestId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests', requestId, 'inspection'] });
+      setIsEditing(false);
+      window.showAppAlert('Inspection report updated', 'success');
+    }
+  });
+
+  const uploadPhotoMutation = useMutation({
+    mutationFn: (file: File) => requestsApi.inspection.uploadPhoto(requestId, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['requests', requestId, 'inspection'] });
+      window.showAppAlert('Photo uploaded', 'success');
+    }
+  });
+
+  const handleSave = () => {
+    updateMutation.mutate(formData);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      uploadPhotoMutation.mutate(e.target.files[0]);
+    }
+  };
+
+  if (isLoading) return <Skeleton className="h-32 w-full rounded-xl" />;
+
+  return (
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mt-8">
+      <div className="flex justify-between items-center mb-6 border-b border-gray-100 pb-2">
+        <h2 className="text-xl font-bold text-gray-900">Site Inspection</h2>
+        {!isEditing && (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="text-sm font-medium text-ess-purple hover:text-ess-darkPurple"
+          >
+            {inspection ? 'Edit Report' : 'Create Report'}
+          </button>
+        )}
+      </div>
+
+      {isEditing ? (
+        <div className="space-y-4">
+          <TextArea
+            label="Site Observations"
+            value={formData.site_observations}
+            onChange={(e) => setFormData({...formData, site_observations: e.target.value})}
+            rows={3}
+          />
+          <TextArea
+            label="Required Materials"
+            value={formData.required_materials}
+            onChange={(e) => setFormData({...formData, required_materials: e.target.value})}
+            rows={2}
+          />
+          <TextArea
+            label="Required Tools"
+            value={formData.required_tools}
+            onChange={(e) => setFormData({...formData, required_tools: e.target.value})}
+            rows={2}
+          />
+          <TextArea
+            label="Installation Notes"
+            value={formData.installation_notes}
+            onChange={(e) => setFormData({...formData, installation_notes: e.target.value})}
+            rows={3}
+          />
+          <TextArea
+            label="Recommendations"
+            value={formData.recommendations}
+            onChange={(e) => setFormData({...formData, recommendations: e.target.value})}
+            rows={2}
+          />
+          <div className="flex justify-end gap-2">
+            <button onClick={() => setIsEditing(false)} className="px-4 py-2 text-sm">Cancel</button>
+            <button onClick={handleSave} disabled={updateMutation.isPending} className="px-4 py-2 bg-ess-purple text-white rounded-lg">
+              {updateMutation.isPending ? 'Saving...' : 'Save Report'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {inspection ? (
+            <>
+              {inspection.site_observations && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Site Observations</h3>
+                  <p className="text-sm whitespace-pre-wrap">{inspection.site_observations}</p>
+                </div>
+              )}
+              {inspection.required_materials && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Required Materials</h3>
+                  <p className="text-sm whitespace-pre-wrap">{inspection.required_materials}</p>
+                </div>
+              )}
+              {inspection.required_tools && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Required Tools</h3>
+                  <p className="text-sm whitespace-pre-wrap">{inspection.required_tools}</p>
+                </div>
+              )}
+              {inspection.installation_notes && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Installation Notes</h3>
+                  <p className="text-sm whitespace-pre-wrap">{inspection.installation_notes}</p>
+                </div>
+              )}
+              {inspection.recommendations && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Recommendations</h3>
+                  <p className="text-sm whitespace-pre-wrap">{inspection.recommendations}</p>
+                </div>
+              )}
+              
+              <div className="pt-4 border-t border-gray-100">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-medium text-gray-500">Inspection Photos</h3>
+                  <label className="cursor-pointer text-sm text-ess-purple hover:text-ess-darkPurple">
+                    Upload Photo
+                    <input type="file" className="hidden" accept="image/*" onChange={handlePhotoUpload} disabled={uploadPhotoMutation.isPending} />
+                  </label>
+                </div>
+                {inspection.photos && inspection.photos.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {inspection.photos.map((photo: any) => (
+                      <div key={photo.id} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                        <img src={photo.file_url || photo.file} alt="Inspection" className="object-cover w-full h-full" />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500">No photos uploaded yet.</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-gray-500">No inspection report available.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+

@@ -3,6 +3,7 @@ from .quote import Quote, QuoteStatus
 from .assignment import Assignment, AssignmentResponseStatus, DeclineReasonCode
 from .verification import Verification, VerificationStatus, Evidence, EvidenceType
 from .audit import Escalation, EscalationStatus, EscalationReasonCode, StateHistory
+from .inspection import InspectionReport, InspectionPhoto
 
 __all__ = [
     "Request",
@@ -23,4 +24,6 @@ __all__ = [
     "EscalationStatus",
     "EscalationReasonCode",
     "StateHistory",
+    "InspectionReport",
+    "InspectionPhoto",
 ]

@@ -43,3 +43,34 @@ urlpatterns = [
 
     path('', include(router.urls)),
 ]
+
+from .views import RequestInspectionViewSet
+
+inspection_retrieve_update = RequestInspectionViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'update'
+})
+inspection_upload_photo = RequestInspectionViewSet.as_view({
+    'post': 'upload_photo'
+})
+
+urlpatterns.extend([
+    path('<str:request_pk>/inspection/', inspection_retrieve_update, name='request-inspection'),
+    path('<str:request_pk>/inspection/photo/', inspection_upload_photo, name='request-inspection-photo'),
+])
+from .views import RequestInspectionViewSet
+
+inspection_retrieve_update = RequestInspectionViewSet.as_view({
+    'get': 'retrieve',
+    'put': 'update',
+    'patch': 'update'
+})
+inspection_upload_photo = RequestInspectionViewSet.as_view({
+    'post': 'upload_photo'
+})
+
+urlpatterns.extend([
+    path('<str:request_pk>/inspection/', inspection_retrieve_update, name='request-inspection'),
+    path('<str:request_pk>/inspection/photo/', inspection_upload_photo, name='request-inspection-photo'),
+])

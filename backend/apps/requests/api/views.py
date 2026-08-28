@@ -533,3 +533,78 @@ class RequestVerificationViewSet(viewsets.ViewSet):
             traceback.print_exc()
             logger.error(f"Service error: {e}")
             return error_response("Unexpected error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+from apps.requests.models.inspection import InspectionReport, InspectionPhoto
+from apps.requests.api.serializers import InspectionReportSerializer, InspectionPhotoSerializer
+from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class RequestInspectionViewSet(viewsets.ViewSet):
+    permission_classes = [GenericRBACPermission]
+    
+    rbac_action_map = {
+        'retrieve': Permission.REQUEST_READ,
+        'update': Permission.REQUEST_UPDATE,
+        'upload_photo': Permission.REQUEST_UPDATE,
+    }
+
+    def get_object(self):
+        pk = self.kwargs.get('request_pk')
+        request_obj = RequestService.get_request_by_id(request_id=pk)
+        self.check_object_permissions(self.request, request_obj)
+        try:
+            return request_obj.inspection_report
+        except Exception:
+            return None
+
+    @extend_schema(summary="Get Inspection Report", responses={200: InspectionReportSerializer})
+    def retrieve(self, request, request_pk=None):
+        obj = self.get_object()
+        if not obj:
+            return error_response("Inspection report not found", status_code=status.HTTP_404_NOT_FOUND)
+        serializer = InspectionReportSerializer(obj)
+        return success_response("Inspection report retrieved successfully", serializer.data)
+
+    @extend_schema(summary="Update Inspection Report", request=InspectionReportSerializer, responses={200: InspectionReportSerializer})
+    def update(self, request, request_pk=None):
+        request_obj = RequestService.get_request_by_id(request_id=request_pk)
+        self.check_object_permissions(request, request_obj)
+        
+        report = getattr(request_obj, 'inspection_report', None)
+        if report:
+            serializer = InspectionReportSerializer(report, data=request.data, partial=True)
+        else:
+            serializer = InspectionReportSerializer(data=request.data)
+            
+        if not serializer.is_valid():
+            return error_response("Validation failed", serializer.errors)
+            
+        if report:
+            serializer.save()
+        else:
+            serializer.save(request=request_obj, created_by=request.user)
+            
+        return success_response("Inspection report updated successfully", serializer.data)
+
+    @extend_schema(summary="Upload Inspection Photo", responses={201: InspectionPhotoSerializer})
+    @action(detail=False, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def upload_photo(self, request, request_pk=None):
+        request_obj = RequestService.get_request_by_id(request_id=request_pk)
+        self.check_object_permissions(request, request_obj)
+        
+        report = getattr(request_obj, 'inspection_report', None)
+        if not report:
+            report = InspectionReport.objects.create(request=request_obj, created_by=request.user)
+            
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return error_response("No file provided", status_code=status.HTTP_400_BAD_REQUEST)
+            
+        description = request.data.get('description', '')
+        
+        photo = InspectionPhoto.objects.create(
+            report=report,
+            file=file_obj,
+            description=description
+        )
+        serializer = InspectionPhotoSerializer(photo)
+        return success_response("Photo uploaded successfully", serializer.data, status_code=status.HTTP_201_CREATED)
