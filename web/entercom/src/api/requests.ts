@@ -76,8 +76,20 @@ export const requestsApi = {
     const { data } = await apiClient.post<RequestItem>(`/requests/${id}/escalate/`, { reason });
     return normalizeData(data);
   },
-  submit_verification: async (id: string, payload: { photos: string[], notes?: string, checklist?: any, customer_ack?: boolean }) => {
-    const { data } = await apiClient.post(`/requests/${id}/verify/`, payload);
+  submit_verification: async (id: string, payload: { photos: File[], notes?: string, checklist?: any, customer_ack?: boolean }) => {
+    const formData = new FormData();
+    if (payload.notes) formData.append('notes', payload.notes);
+    if (payload.checklist) formData.append('checklist', JSON.stringify(payload.checklist));
+    if (payload.customer_ack !== undefined) formData.append('customer_ack', String(payload.customer_ack));
+    if (payload.photos && payload.photos.length > 0) {
+      payload.photos.forEach(photo => formData.append('photos', photo));
+    }
+    
+    const { data } = await apiClient.post(`/requests/${id}/verify/`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
     return normalizeData(data);
   },
   review_verification: async (id: string, payload: { action: 'approve'|'reject'|'override', notes?: string }) => {

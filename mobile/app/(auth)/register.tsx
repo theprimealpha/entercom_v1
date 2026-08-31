@@ -92,11 +92,10 @@ export default function RegisterScreen() {
                 maxLength={6}
               />
               <Button 
-                title={isVerifying ? "Verifying..." : "Verify OTP"} 
                 onPress={handleVerifyOtp} 
                 isLoading={isVerifying}
                 disabled={otp.length !== 6 || isVerifying}
-              />
+              >{isVerifying ? "Verifying..." : "Verify OTP"}</Button>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>

@@ -52,7 +52,7 @@ export default function ProfileScreen() {
         
         <View className="flex-row items-center relative z-10">
           <Avatar 
-            src={user?.profile_image}
+            src={(user as any)?.profile_image}
             fallback={user?.first_name || 'US'} 
             size="xl" 
             className="border-4 border-white/20"

@@ -175,7 +175,7 @@ export default function HomeScreen() {
                 <Menu size={24} color="white" />
               </Pressable>
               <Avatar 
-                src={user?.profile_image}
+                src={(user as any)?.profile_image}
                 fallback={user?.first_name || 'C'} 
                 size="md" 
                 className="mr-3 border-2 border-white/20"

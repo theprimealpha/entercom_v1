@@ -43,7 +43,7 @@ export default function QuoteDetailsScreen() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Submit',
-            onPress: async (reason) => {
+            onPress: async (reason: string | undefined) => {
               if (!reason) {
                 global.showAppAlert('Reason Required', `You must provide a reason to ${action} the quote.`);
                 return;

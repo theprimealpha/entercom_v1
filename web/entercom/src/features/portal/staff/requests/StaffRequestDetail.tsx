@@ -552,6 +552,7 @@ export default function StaffRequestDetail() {
               historyEvents={
                 !timeline ? [] : 
                 ensureArray(timeline).map((event: any) => ({
+                  type: event.type,
                   to_state: event.to_state || event.new_state || event.status,
                   created_at: event.created_at,
                   reason: event.reason

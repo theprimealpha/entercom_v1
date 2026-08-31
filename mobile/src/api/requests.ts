@@ -7,6 +7,7 @@ export interface RequestItem {
   title?: string;
   status: string;
   created_at?: string;
+  requires_technician?: boolean;
   updated_at?: string;
   description?: string;
   service_type?: string;

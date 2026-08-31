@@ -3,6 +3,7 @@ import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl, A
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, AlertCircle, FileText, CheckCircle2, Clock, Circle, MessageCircle, CreditCard } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { paymentsApi } from '../../../src/api/payments';
 import { requestsApi, RequestItem } from '../../../src/api/requests';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import * as ImagePicker from 'expo-image-picker';
@@ -16,10 +17,29 @@ export default function RequestDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [request, setRequest] = useState<RequestItem | null>(null);
   const [timeline, setTimeline] = useState<any[]>([]);
+  const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   // Auto-refresh every 10 seconds
+  const fetchRequest = useCallback(async () => {
+    if (!id) return;
+    try {
+      setError(null);
+      const [requestData, timelineData, quotesData] = await Promise.all([
+        requestsApi.get(id),
+        requestsApi.timeline(id).catch(() => []), // timeline may not exist for all requests
+        requestsApi.quotes.list(id as string).catch(() => []),
+      ]);
+      setRequest(requestData);
+      setTimeline(Array.isArray(timelineData) ? timelineData : []);
+      setQuotes(Array.isArray(quotesData) ? quotesData : quotesData?.data || []);
+    } catch (err: any) {
+      setError('Failed to load request details. Pull down to retry.');
+      console.error('Request detail fetch error:', err);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (!id) return;
     const interval = setInterval(() => {
@@ -28,6 +48,7 @@ export default function RequestDetailScreen() {
     return () => clearInterval(interval);
   }, [id, fetchRequest]);
   const [error, setError] = useState<string | null>(null);
+
 
   const [verifying, setVerifying] = useState(false);
   const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
@@ -84,21 +105,6 @@ export default function RequestDetailScreen() {
     }
   };
 
-  const fetchRequest = useCallback(async () => {
-    if (!id) return;
-    try {
-      setError(null);
-      const [requestData, timelineData] = await Promise.all([
-        requestsApi.get(id),
-        requestsApi.timeline(id).catch(() => []), // timeline may not exist for all requests
-      ]);
-      setRequest(requestData);
-      setTimeline(Array.isArray(timelineData) ? timelineData : []);
-    } catch (err: any) {
-      setError('Failed to load request details. Pull down to retry.');
-      console.error('Request detail fetch error:', err);
-    }
-  }, [id]);
 
   useEffect(() => {
     fetchRequest().finally(() => setLoading(false));
@@ -126,7 +132,7 @@ export default function RequestDetailScreen() {
         {
           text: 'Cancel It',
           style: 'destructive',
-          onPress: async (reason) => {
+          onPress: async (reason: string | undefined) => {
             if (!reason) {
               global.showAppAlert('Reason Required', 'You must provide a reason to cancel the request.');
               return;
@@ -256,17 +262,67 @@ export default function RequestDetailScreen() {
             </Pressable>
           )}
 
-          {request.status === 'awaiting_payment' && request.order_id && (
-            <Pressable onPress={() => router.push(`/(screens)/orders/${request.order_id}`)} className="mx-5 bg-ess-purple rounded-2xl shadow-sm p-4 mb-3 flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center">
-                  <CreditCard size={16} color="white" />
+          {(() => {
+            const activeQuote = quotes.find(q => ['approved', 'partially_paid'].includes(q.status));
+            
+            const handlePayment = async (plan: 'full' | 'fifty_fifty') => {
+              if (!activeQuote) return;
+              try {
+                setCancelling(true); // Reusing loading state for simplicity
+                const res = await paymentsApi.initializeQuotePayment({ quote_id: activeQuote.id, payment_plan: plan });
+                if (res.authorization_url) {
+                  // Wait, Expo router doesn't open web links easily without Linking.
+                  // The frontend redirects to authorization_url.
+                  // For mobile, we should probably push to the order page or open WebBrowser.
+                  // Actually, just pushing to the order screen should work because the order is created!
+                  if (res.order_id) {
+                     router.push(`/(screens)/orders/${res.order_id}`);
+                  }
+                }
+              } catch (err: any) {
+                global.showAppAlert('Payment Error', err.response?.data?.detail || 'Failed to initialize payment.');
+              } finally {
+                setCancelling(false);
+              }
+            };
+
+            if (activeQuote && ['approved', 'partially_paid'].includes(activeQuote.status) && request.status !== 'completed' && request.status !== 'verified') {
+              return (
+                <View className="mx-5 bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
+                  <Text className="text-lg font-bold text-gray-900 mb-4">Payment Options</Text>
+                  
+                  <View className="border border-gray-200 rounded-xl p-4 mb-3 bg-gray-50">
+                    <Text className="font-semibold text-base mb-1">{activeQuote.status === 'partially_paid' ? 'Pay Remaining Balance' : 'Pay in Full'}</Text>
+                    <Text className="text-xs text-gray-500 mb-3">{activeQuote.status === 'partially_paid' ? 'Settle the final half of the quote.' : 'Settle the entire balance now.'}</Text>
+                    <Text className="text-xl font-bold mb-3">?{(parseFloat(activeQuote.amount || 0) - (parseFloat(activeQuote.amount_paid || 0))).toLocaleString()}</Text>
+                    <Pressable 
+                      onPress={() => handlePayment('full')}
+                      disabled={cancelling}
+                      className="w-full py-3 bg-ess-purple items-center rounded-xl"
+                    >
+                      <Text className="text-white font-bold">{cancelling ? 'Processing...' : (activeQuote.status === 'partially_paid' ? 'Pay Balance' : 'Pay in Full')}</Text>
+                    </Pressable>
+                  </View>
+
+                  {activeQuote.status === 'approved' && (!activeQuote.amount_paid || parseFloat(activeQuote.amount_paid) === 0) && (
+                    <View className="border border-gray-200 rounded-xl p-4">
+                      <Text className="font-semibold text-base mb-1">Pay 50% Deposit</Text>
+                      <Text className="text-xs text-gray-500 mb-3">Pay half now, balance on completion.</Text>
+                      <Text className="text-xl font-bold mb-3">?{(parseFloat(activeQuote.amount || 0) / 2).toLocaleString()}</Text>
+                      <Pressable 
+                        onPress={() => handlePayment('fifty_fifty')}
+                        disabled={cancelling}
+                        className="w-full py-3 border border-ess-purple items-center rounded-xl"
+                      >
+                        <Text className="text-ess-purple font-bold">{cancelling ? 'Processing...' : 'Pay Deposit'}</Text>
+                      </Pressable>
+                    </View>
+                  )}
                 </View>
-                <Text className="ml-3 font-bold text-white">Pay Quote Now</Text>
-              </View>
-              <ArrowLeft size={16} color="white" className="rotate-180" />
-            </Pressable>
-          )}
+              );
+            }
+            return null;
+          })()}
           
           {(request.status === 'cancelled' || request.status === 'canceled') && (
             <Pressable onPress={() => router.push('/(screens)/request/new')} className="mx-5 bg-gray-800 rounded-2xl shadow-sm p-4 mb-3 flex-row justify-center items-center">
@@ -360,9 +416,9 @@ export default function RequestDetailScreen() {
             <View className="mx-5 mt-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
               <Text className="text-lg font-bold text-gray-900 mb-5">Activity Timeline</Text>
               <View className="pl-1">
-                {timeline.map((event: any, index: number) => (
+                {timeline.filter((e: any) => !e.type || e.type === 'state_change').map((event: any, index: number, filteredArr: any[]) => (
                   <View key={event.id || index} className="flex-row mb-6 relative">
-                    {index < timeline.length - 1 && (
+                    {index < filteredArr.length - 1 && (
                       <View className="absolute left-[11px] top-7 bottom-[-24px] w-0.5 bg-gray-200" />
                     )}
                     <View className="mr-4 bg-white z-10">
@@ -370,7 +426,7 @@ export default function RequestDetailScreen() {
                     </View>
                     <View className="flex-1 -mt-0.5">
                       <Text className="font-semibold text-gray-900 text-base">
-                        {event.event_type?.replace(/_/g, ' ') || event.title || 'Update'}
+                        {event.to_state ? event.to_state.replace(/_/g, ' ') : (event.action || 'Update')}
                       </Text>
                       {event.description && (
                         <Text className="text-gray-500 text-sm mt-0.5">{event.description}</Text>

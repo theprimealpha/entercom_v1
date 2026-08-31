@@ -6,6 +6,7 @@ import { twMerge } from 'tailwind-merge';
 export interface InputProps extends Omit<TextInputProps, 'className'> {
   label?: string;
   error?: string;
+  leftIcon?: React.ReactNode;
   className?: string;
   containerClassName?: string;
 }

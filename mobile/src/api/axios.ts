@@ -46,7 +46,7 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/login/') {
       if (isRefreshing) {
         return new Promise(function (resolve, reject) {
           failedQueue.push({ resolve, reject });
@@ -59,13 +59,14 @@ apiClient.interceptors.response.use(
       }
 
       originalRequest._retry = true;
-      isRefreshing = true;
 
       const refreshToken = await AsyncStorage.getItem('refresh_token');
       if (!refreshToken) {
         useAuthStore.getState().logout();
         return Promise.reject(error);
       }
+      
+      isRefreshing = true;
 
       try {
         const { data } = await axios.post(`${BASE_URL}/auth/refresh/`, {

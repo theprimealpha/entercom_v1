@@ -21,6 +21,10 @@ export const paymentsApi = {
     const { data } = await apiClient.get<PaymentItem>(`/payments/${id}/`);
     return normalizeData(data);
   },
+  initializeQuotePayment: async (payload: { quote_id: string, payment_plan: string, callback_url?: string }) => {
+    const { data } = await apiClient.post<PaymentItem>('/payments/quote/initialize/', payload);
+    return normalizeData(data);
+  },
   initialize: async (payload: { order_id: string, callback_url?: string }) => {
     const { data } = await apiClient.post<PaymentItem>('/payments/initialize/', payload);
     return normalizeData(data);

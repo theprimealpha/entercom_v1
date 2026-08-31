@@ -7,7 +7,6 @@ import { ArrowLeft, FileText, ChevronRight } from 'lucide-react-native';
 import { Card, CardContent } from '../../../src/components/ui/Card';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import { useAuthStore } from '../../../src/store/authStore';
-import { quoteApi, QuoteItem } from '../../../src/api/quotes';
 import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { Button } from '../../../src/components/ui/Button';
 import { requestsApi } from '../../../src/api/requests';

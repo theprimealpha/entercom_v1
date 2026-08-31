@@ -1,109 +1,32 @@
-on manager's portal request detail page:
-Description
-Jenskdkndkdkdk
+{
+    "success": false,
+    "message": "Validation failed",
+    "errors": {
+        "photos": {
+            "0": [
+                "The submitted data was not a file. Check the encoding type on the form."
+            ]
+        }
+    }
+}
 
-Quote & Payment Summary
-Plan
-N/A
-Total
-₦50,000
-Paid
-₦0
-Balance
-₦50,000
-Current Owner
-STAFF
 
+https://entercom-v1.vercel.app/portal/staff/technician/requests/be0f777f-fab9-4f41-9b69-733f2d5f1445/verification
 
 
 
-on the staff portal request detail page:
-REQ-A951891F
-awaiting assignment
-normal Priority
-Category
-installation
-
-Description
-Jenskdkndkdkdk
-
-Quote & Payment Summary
-Plan
-N/A
-Total
-₦50,000
-Paid
-₦0
-Balance
-₦50,000
-Current Owner
-STAFF
-
-Workflow Actions
-👷 Assign Technician
-
-Select an option
-Assign
-Cancel Request
-Quotes & Estimates
-v1paid
-₦50,000
-Paid: ₦NaN
-
-
-on the customers page
-Unknown State
-11/08/2026, 17:11:48
-
-Unknown State
-11/08/2026, 17:11:52
-
-Unknown State
-11/08/2026, 17:11:52
-
-Unknown State
-11/08/2026, 17:12:33
-
-Unknown State
-11/08/2026, 17:12:38
-
-Staff triage action: needs_quote
-
-Unknown State
-11/08/2026, 17:12:38
-
-Unknown State
-11/08/2026, 17:12:50
-
-Unknown State
-11/08/2026, 17:12:50
-
-Unknown State
-11/08/2026, 18:07:35
-
-Unknown State
-11/08/2026, 18:07:36
-
-Unknown State
-12/08/2026, 14:11:55
-
-Unknown State
-12/08/2026, 14:11:55
-
-assigned
-28/08/2026, 15:29:11
-
-Current stage
-
-
-Payment Options
-Pay Remaining Balance
-Settle the final half of the quote.
-
-₦50,000
-Pay Balance
+Request URL
+https://entercomv1-production.up.railway.app/api/v1/requests/be0f777f-fab9-4f41-9b69-733f2d5f1445/verify/
+Request Method
+POST
+Status Code
+400 Bad Request
+Remote Address
+69.46.46.0:443
+Referrer Policy
+strict-origin-when-cross-origin
 
 
 
 
-meaning that no fix was performed, I am highly dissappointed in you!
+and can you recall the request history and details we wanted to add for the technician, has it been added shiw me proof
